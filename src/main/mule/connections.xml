@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="410fe7bc-d20b-40eb-aab2-d7da545d3ad4" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Oracle_Connection" doc:name="Database Config" doc:id="d28ec0c4-729a-439b-b521-d0274e0491da" >
+		<db:oracle-connection host="192.168.0.10" user="integration" password="integration" serviceName="orcl" />
+	</db:config>
+	<db:config name="MYSQL_Connection" doc:name="Database Config" doc:id="6d6b9651-6273-47e1-8cb3-3de91f4d50bc" >
+		<db:my-sql-connection host="192.168.0.10" port="3306" user="leonardo" password="nick6435." database="integration" />
+	</db:config>
+	<db:config name="MSSERVER" doc:name="Database Config" doc:id="29d437df-66a1-4e4e-a1a4-52a6a7c4f521" >
+		<db:mssql-connection host="192.168.0.10" instanceName="NICK-SERVER\SQLEXPRESS" port="1433" user="leonardo" password="nick6435." databaseName="integration" />
+	</db:config>
+	<flow name="Oracle" doc:id="b23be40c-c9dc-45c3-b7b2-2fc3af3a1b26" >
+		<http:listener doc:name="Oracle" doc:id="aca45f46-26d0-4a87-95b9-96058d5d1c1a" config-ref="HTTP_Listener_config" path="oracle"/>
+		<db:select doc:name="Select" doc:id="6c2be2bb-8285-4d46-9be4-c84378922753" config-ref="Oracle_Connection">
+			<db:sql ><![CDATA[SELECT * FROM CLIENTES]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="fd3352a3-3f53-4163-ba64-97ec02bba89b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((cliente, index) -> {
+    id: cliente.CLIENTEID,
+    nombre: cliente.NOMBRE,
+    apellido: cliente.APELLIDO,
+    email: cliente.EMAIL,
+    telefono: cliente.TELEFONO
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="90452adf-d760-429f-8899-7b2a1487ced7" message="#[payload]"/>
+	</flow>
+	<flow name="MYSQL" doc:id="3a73980b-c080-48ba-843f-5fc773bc3028" >
+		<http:listener doc:name="MYSQL" doc:id="8f9850a1-d8a8-46f0-b722-efb722a66a8b" config-ref="HTTP_Listener_config" path="mysql"/>
+		<db:select doc:name="Select" doc:id="1aa6dbe6-54bf-4611-bb91-7a9c6599f1fd" config-ref="MYSQL_Connection">
+			<db:sql ><![CDATA[SELECT * FROM CLIENTES]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="55010882-1757-449a-a804-66e99e6c358f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((cliente, index) -> {
+    id: cliente.CLIENTEID,
+    nombre: cliente.NOMBRE,
+    apellido: cliente.APELLIDO,
+    email: cliente.EMAIL,
+    telefono: cliente.TELEFONO
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c6e33085-cb5f-4d4d-b850-de2265205cf2" message="#[payload]" />
+	</flow>
+	<flow name="MicrosoftSQLServer" doc:id="b57a1ecb-8053-41a6-8442-088abad1835f" >
+		<http:listener doc:name="MSServer" doc:id="78edb825-b6b7-4581-b2b9-d63ffb1ad3e2" config-ref="HTTP_Listener_config" path="msserver"/>
+		<db:select doc:name="Select" doc:id="4844906e-5472-4435-b93d-d372bcfb15f9" config-ref="MSSERVER" >
+			<db:sql ><![CDATA[SELECT * FROM CLIENTES]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="84bfb143-332d-4820-9d6d-b18010491c23" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((cliente, index) -> {
+    id: cliente.CLIENTEID,
+    nombre: cliente.NOMBRE,
+    apellido: cliente.APELLIDO,
+    email: cliente.EMAIL,
+    telefono: cliente.TELEFONO
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c11ee5a0-b019-4492-b05b-9b84eb68ab14" message="#[payload]" />
+	</flow>
+</mule>
